@@ -32,7 +32,6 @@ using namespace std;
 random_numbers::RandomNumberGenerator *rng;
 
 
-
 string rover_name;
 char host[128];
 bool is_published_name = false;
@@ -60,6 +59,8 @@ ros::Publisher target_collected_publisher;
 ros::Publisher angular_publisher;
 ros::Publisher messagePublish;
 ros::Publisher debug_publisher;
+ros::Publisher posePublisher;
+ros::Publisher global_averaging_heading;
 
 //Subscribers
 ros::Subscriber joySubscriber;
@@ -69,6 +70,7 @@ ros::Subscriber obstacleSubscriber;
 ros::Subscriber odometrySubscriber;
 
 ros::Subscriber messageSubscriber;
+ros::Subscriber poseSubscriber;
 
 //Timers
 ros::Timer stateMachineTimer;
