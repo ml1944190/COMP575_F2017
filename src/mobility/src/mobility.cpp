@@ -125,7 +125,7 @@ int main(int argc, char **argv)
     status_publisher = mNH.advertise<std_msgs::String>((rover_name + "/status"), 1, true);
     velocityPublish = mNH.advertise<geometry_msgs::Twist>((rover_name + "/velocity"), 10);
     stateMachinePublish = mNH.advertise<std_msgs::String>((rover_name + "/state_machine"), 1, true);
-    messagePublish = mNH.advertise<std_msgs::String>(("messages"), 10, true);
+    
     target_collected_publisher = mNH.advertise<std_msgs::Int16>(("targetsCollected"), 1, true);
     angular_publisher = mNH.advertise<std_msgs::String>((rover_name + "/angular"),1,true);
     publish_status_timer = mNH.createTimer(ros::Duration(status_publish_interval), publishStatusTimerEventHandler);
@@ -278,6 +278,16 @@ void sigintEventHandler(int sig)
     ros::shutdown();
 }
 
-void messageHandler(const std_msgs::String::ConstPtr& message)
+void poseHandler(const std_msgs::String::ConstPtr& message)
+{
+    current_location.x = message->pose.pose.position.x;
+    current_location.y = message->pose.pose.position.y;
+
+}
+void globalAverageHeadingHandler(const std_msgs::String::ConstPtr& message)
+{
+}
+
+void localAverageHeadingHandler(const std_msgs::String::ConstPtr& message)
 {
 }
