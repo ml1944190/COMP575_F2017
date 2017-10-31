@@ -1,5 +1,9 @@
 #include <ros/ros.h>
-
+#include <stdlib.h>
+#include <sstream>
+#include <iostream>
+#include <string>
+#include <vector>
 // ROS libraries
 #include <angles/angles.h>
 #include <random_numbers/random_numbers.h>
@@ -8,6 +12,7 @@
 // ROS messages
 #include <std_msgs/Int16.h>
 #include <std_msgs/UInt8.h>
+#include <std_msgs/Float32.h>
 #include <std_msgs/String.h>
 #include <sensor_msgs/Joy.h>
 #include <sensor_msgs/Range.h>
@@ -32,6 +37,7 @@ using namespace std;
 random_numbers::RandomNumberGenerator *rng;
 
 
+
 string rover_name;
 char host[128];
 bool is_published_name = false;
@@ -43,6 +49,7 @@ float status_publish_interval = 5;
 float kill_switch_timeout = 10;
 
 pose current_location;
+vector <pose> my_rover(3);
 
 int transitions_to_auto = 0;
 double time_stamp_transition_to_auto = 0.0;
@@ -57,10 +64,11 @@ ros::Publisher stateMachinePublish;
 ros::Publisher status_publisher;
 ros::Publisher target_collected_publisher;
 ros::Publisher angular_publisher;
-
+ros::Publisher messagePublish;
 ros::Publisher debug_publisher;
 ros::Publisher posePublisher;
-ros::Publisher global_averaging_heading;
+ros::Publisher globalPublisher;
+ros::Publisher localPublisher;
 
 //Subscribers
 ros::Subscriber joySubscriber;
@@ -68,8 +76,11 @@ ros::Subscriber modeSubscriber;
 ros::Subscriber targetSubscriber;
 ros::Subscriber obstacleSubscriber;
 ros::Subscriber odometrySubscriber;
-
 ros::Subscriber poseSubscriber;
+ros::Subscriber globalSubscriber;
+ros::Subscriber localSubscriber;
+
+ros::Subscriber messageSubscriber;
 
 //Timers
 ros::Timer stateMachineTimer;
@@ -91,7 +102,10 @@ void odometryHandler(const nav_msgs::Odometry::ConstPtr &message);
 void mobilityStateMachine(const ros::TimerEvent &);
 void publishStatusTimerEventHandler(const ros::TimerEvent &event);
 void killSwitchTimerEventHandler(const ros::TimerEvent &event);
+void messageHandler(const std_msgs::String::ConstPtr &message);
 void poseHandler(const std_msgs::String::ConstPtr &message);
+void calculate_global_heading(string rover_name);
+
 
 int main(int argc, char **argv)
 {
@@ -120,19 +134,23 @@ int main(int argc, char **argv)
     targetSubscriber = mNH.subscribe((rover_name + "/targets"), 10, targetHandler);
     obstacleSubscriber = mNH.subscribe((rover_name + "/obstacle"), 10, obstacleHandler);
     odometrySubscriber = mNH.subscribe((rover_name + "/odom/ekf"), 10, odometryHandler);
-    poseSubscriber = mNH.subscribe(("pose"), 10, poseHandler);
+    messageSubscriber = mNH.subscribe(("messages"), 10, messageHandler);
+    poseSubscriber=mNH.subscribe(("pose"),10,poseHandler);
 
     status_publisher = mNH.advertise<std_msgs::String>((rover_name + "/status"), 1, true);
     velocityPublish = mNH.advertise<geometry_msgs::Twist>((rover_name + "/velocity"), 10);
     stateMachinePublish = mNH.advertise<std_msgs::String>((rover_name + "/state_machine"), 1, true);
-    
+    messagePublish = mNH.advertise<std_msgs::String>(("messages"), 10, true);
     target_collected_publisher = mNH.advertise<std_msgs::Int16>(("targetsCollected"), 1, true);
     angular_publisher = mNH.advertise<std_msgs::String>((rover_name + "/angular"),1,true);
     publish_status_timer = mNH.createTimer(ros::Duration(status_publish_interval), publishStatusTimerEventHandler);
     killSwitchTimer = mNH.createTimer(ros::Duration(kill_switch_timeout), killSwitchTimerEventHandler);
     stateMachineTimer = mNH.createTimer(ros::Duration(mobility_loop_time_step), mobilityStateMachine);
     debug_publisher = mNH.advertise<std_msgs::String>("/debug", 1, true);
-    posePublish = mNH.advertise<std_msgs::String>(("pose"), 10 , true);
+    messagePublish = mNH.advertise<std_msgs::String>(("messages"), 10 , true);
+    posePublisher = mNH.advertise<std_msgs::String>(("pose"), 10 , true);	
+    globalPublisher = mNH.advertise<std_msgs::Float32>((rover_name + "/global_average_heading"), 1, true);
+    localPublisher  = mNH.advertise<std_msgs::Float32>((rover_name + "/local_averaging_heading"),1,true);
     
     ros::spin();
     return EXIT_SUCCESS;
@@ -235,6 +253,12 @@ void odometryHandler(const nav_msgs::Odometry::ConstPtr &message)
     double roll, pitch, yaw;
     m.getRPY(roll, pitch, yaw);
     current_location.theta = yaw;
+
+    std_msgs::String msg;
+    std::stringstream converter;
+    converter<<rover_name<<", "<<current_location.x<<", "<<current_location.y<<", "<<current_location.theta;
+    msg.data=converter.str();
+    posePublisher.publish(msg);
 }
 
 void joyCmdHandler(const geometry_msgs::Twist::ConstPtr &message)
@@ -278,16 +302,55 @@ void sigintEventHandler(int sig)
     ros::shutdown();
 }
 
+void messageHandler(const std_msgs::String::ConstPtr& message)
+{
+}
 void poseHandler(const std_msgs::String::ConstPtr& message)
 {
-    current_location.x = message->pose.pose.position.x;
-    current_location.y = message->pose.pose.position.y;
-
-}
-void globalAverageHeadingHandler(const std_msgs::String::ConstPtr& message)
+    	
+ float global_heading=0;
+ float local_heading=0;
+ float l_x=0;
+ float l_y=0;
+ float g_x=0;
+ float g_y=0;
+    int i;
+    std_msgs::Float32 gah_message;
+    std_msgs::Float32 lah_message;
+  if (rover_name=="ajax")
+ {
+     i=0;
+  }
+  if(rover_name=="aeneas")
 {
+	i=1;
+}
+ if(rover_name=="achilles")
+{
+	i=2;
+}
+ my_rover[i].x=current_location.x;
+ my_rover[i].y=current_location.y;
+ my_rover[i].theta=current_location.theta;
+
+for(int j=0;j<=2;j++)
+{
+ g_x+=cos(my_rover[j].x);
+ g_y+=sin(my_rover[j].y);
+
+ if(i!=j&&(hypot(my_rover[i].x, my_rover[i].y)<2)){
+    l_x+=cos(my_rover[j].x);
+    l_y+=sin(my_rover[j].y);
+}
+}
+    
+local_heading=atan2(l_y,l_x);
+global_heading=atan2(g_y,g_x);
+
+ lah_message.data=local_heading;
+ gah_message.data=global_heading;
+ localPublisher.publish(lah_message);
+ globalPublisher.publish(gah_message);
+   
 }
 
-void localAverageHeadingHandler(const std_msgs::String::ConstPtr& message)
-{
-}
