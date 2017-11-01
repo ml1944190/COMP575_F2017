@@ -19,7 +19,7 @@
 #include <geometry_msgs/Pose2D.h>
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
-
+#define KP 2
 #include "Pose.h"
 #include "TargetState.h"
 
@@ -41,6 +41,7 @@ random_numbers::RandomNumberGenerator *rng;
 string rover_name;
 char host[128];
 bool is_published_name = false;
+float my_angular=0;
 
 
 int simulation_mode = 0;
@@ -173,8 +174,8 @@ void mobilityStateMachine(const ros::TimerEvent &)
         case STATE_MACHINE_TRANSLATE:
         {
             state_machine_msg.data = "TRANSLATING";//, " + converter.str();
-            float angular_velocity = 0.2;
-            float linear_velocity = 0.1;
+            float angular_velocity = my_angular;
+            float linear_velocity = 0;
             setVelocity(linear_velocity, angular_velocity);
             break;
         }
@@ -329,6 +330,7 @@ void poseHandler(const std_msgs::String::ConstPtr& message)
 {
 	i=2;
 }
+
  my_rover[i].x=current_location.x;
  my_rover[i].y=current_location.y;
  my_rover[i].theta=current_location.theta;
@@ -351,6 +353,8 @@ global_heading=atan2(g_y,g_x);
  gah_message.data=global_heading;
  localPublisher.publish(lah_message);
  globalPublisher.publish(gah_message);
+
+my_angular=KP*(local_heading-current_location.theta);
    
 }
 
