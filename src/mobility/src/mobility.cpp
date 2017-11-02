@@ -19,7 +19,7 @@
 #include <geometry_msgs/Pose2D.h>
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
-#define KP 0.5
+#define KP 1
 #include "Pose.h"
 #include "TargetState.h"
 
