@@ -311,6 +311,7 @@ void poseHandler(const std_msgs::String::ConstPtr& message)
     	
  float global_heading=0;
  float local_heading=0;
+ float local_position=0;
  float l_x=0;
  float l_y=0;
  float g_x=0;
@@ -337,12 +338,12 @@ void poseHandler(const std_msgs::String::ConstPtr& message)
 
 for(int j=0;j<=2;j++)
 {
- g_x+=cos(my_rover[j].x);
- g_y+=sin(my_rover[j].y);
+ g_x+=cos(my_rover[j].theta);
+ g_y+=sin(my_rover[j].theta);
 
  if(i!=j&&(hypot(my_rover[i].x, my_rover[i].y)<2)){
-    l_x+=cos(my_rover[j].x);
-    l_y+=sin(my_rover[j].y);
+    l_x+=cos(my_rover[j].theta);
+    l_y+=sin(my_rover[j].theta);
 }
 }
     
