@@ -42,7 +42,7 @@ string rover_name;
 char host[128];
 bool is_published_name = false;
 float my_angular=0;
-
+float my_angular_new=0;
 
 int simulation_mode = 0;
 float mobility_loop_time_step = 0.1;
@@ -174,8 +174,8 @@ void mobilityStateMachine(const ros::TimerEvent &)
         case STATE_MACHINE_TRANSLATE:
         {
             state_machine_msg.data = "TRANSLATING";//, " + converter.str();
-            float angular_velocity = my_angular;
-            float linear_velocity = 0;
+            float angular_velocity = my_angular_new;
+            float linear_velocity = 0.05;
             setVelocity(linear_velocity, angular_velocity);
             break;
         }
@@ -316,6 +316,8 @@ void poseHandler(const std_msgs::String::ConstPtr& message)
  float l_y=0;
  float g_x=0;
  float g_y=0;
+ float p_x=0;
+ float p_y=0;
     int i;
     std_msgs::Float32 gah_message;
     std_msgs::Float32 lah_message;
@@ -344,17 +346,21 @@ for(int j=0;j<=2;j++)
  if(i!=j&&(hypot(my_rover[i].x, my_rover[i].y)<2)){
     l_x+=cos(my_rover[j].theta);
     l_y+=sin(my_rover[j].theta);
+    p_x+=(current_location.x-my_rover[j].x);
+    p_y+=(current_location.y-my_rover[j].y);
 }
 }
     
 local_heading=atan2(l_y,l_x);
 global_heading=atan2(g_y,g_x);
+local_position=atan2(p_y,p_x);
 
  lah_message.data=local_heading;
  gah_message.data=global_heading;
  localPublisher.publish(lah_message);
  globalPublisher.publish(gah_message);
 
+my_angular_new=KP*(current_location.theta-local_position);
 my_angular=KP*(local_heading-current_location.theta);
    
 }
