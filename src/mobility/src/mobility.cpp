@@ -335,15 +335,15 @@ void poseHandler(const std_msgs::String::ConstPtr& message)
 }
 if(rover_name=="diomedes")	
 {
-	i=3
+	i=3;
 }
 if(rover_name=="hector")
 {
-	i=4
+	i=4;
 }
 if(rover_name=="paris")
 {
-	i=5
+	i=5;
 }
 
  my_rover[i].x=current_location.x;
