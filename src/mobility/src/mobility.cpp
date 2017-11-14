@@ -50,7 +50,7 @@ float status_publish_interval = 5;
 float kill_switch_timeout = 10;
 
 pose current_location;
-vector <pose> my_rover(3);
+vector <pose> my_rover(6);
 
 int transitions_to_auto = 0;
 double time_stamp_transition_to_auto = 0.0;
@@ -333,12 +333,24 @@ void poseHandler(const std_msgs::String::ConstPtr& message)
 {
 	i=2;
 }
+if(rover_name=="diomedes")	
+{
+	i=3
+}
+if(rover_name=="hector")
+{
+	i=4
+}
+if(rover_name=="paris")
+{
+	i=5
+}
 
  my_rover[i].x=current_location.x;
  my_rover[i].y=current_location.y;
  my_rover[i].theta=current_location.theta;
 
-for(int j=0;j<=2;j++)
+for(int j=0;j<=5;j++)
 {
  g_x+=cos(my_rover[j].theta);
  g_y+=sin(my_rover[j].theta);
