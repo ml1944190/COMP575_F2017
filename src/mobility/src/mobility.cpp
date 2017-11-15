@@ -316,9 +316,12 @@ void poseHandler(const std_msgs::String::ConstPtr& message)
  float l_y=0;
  float g_x=0;
  float g_y=0;
- float p_x=0;
+ float all_n_p_x=0;
+ float all_n_p_y=0;
  float p_y=0;
+ float p_x=0;
     int i;
+    int k=0;
     std_msgs::Float32 gah_message;
     std_msgs::Float32 lah_message;
   if (rover_name=="ajax")
@@ -356,12 +359,16 @@ for(int j=0;j<=5;j++)
  g_y+=sin(my_rover[j].theta);
 
  if(i!=j&&(hypot(my_rover[i].x, my_rover[i].y)<2)){
+    k++;
     l_x+=cos(my_rover[j].theta);
     l_y+=sin(my_rover[j].theta);
-    p_x+=(current_location.x-my_rover[j].x);
-    p_y+=(current_location.y-my_rover[j].y);
+    all_n_p_x+=(my_rover[j].x-current_location.x);
+    all_n_p_y+=(my_rover[j].y-current_location.y);
 }
 }
+    p_y = current_location.y+all_n_p_y/k;
+    p_x = current_location.x+all_n_p_x/k;	
+
     
 local_heading=atan2(l_y,l_x);
 global_heading=atan2(g_y,g_x);
