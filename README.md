@@ -247,5 +247,4 @@ Since ROS is multithreaded you may need to attach the debugger to threads that h
 ```sudo apt-get install libcap2-bin```
 
 ```sudo setcap cap_sys_ptrace=eip /usr/bin/gdb```
-
-To use QT Creator to debug your already running program click the "Debug" menu. Choose "Start Debugging" and then "Attach to Running Application...". You will be able to use the graphical interface to GDB from here. 
+o use QT Creator to debug your already running m click the "Debug" menu. Choose "Start Debugging" and then "Attach to Running Application...". You will be able to use the graphical interface to GDB from here. 

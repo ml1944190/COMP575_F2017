@@ -50,7 +50,7 @@ float status_publish_interval = 5;
 float kill_switch_timeout = 10;
 
 pose current_location;
-vector <pose> my_rover(3);
+vector <pose> my_rover(6);
 
 int transitions_to_auto = 0;
 double time_stamp_transition_to_auto = 0.0;
@@ -316,9 +316,12 @@ void poseHandler(const std_msgs::String::ConstPtr& message)
  float l_y=0;
  float g_x=0;
  float g_y=0;
- float p_x=0;
+ float all_n_p_x=0;
+ float all_n_p_y=0;
  float p_y=0;
+ float p_x=0;
     int i;
+    int k=0;
     std_msgs::Float32 gah_message;
     std_msgs::Float32 lah_message;
   if (rover_name=="ajax")
@@ -333,23 +336,39 @@ void poseHandler(const std_msgs::String::ConstPtr& message)
 {
 	i=2;
 }
+if(rover_name=="diomedes")	
+{
+	i=3;
+}
+if(rover_name=="hector")
+{
+	i=4;
+}
+if(rover_name=="paris")
+{
+	i=5;
+}
 
  my_rover[i].x=current_location.x;
  my_rover[i].y=current_location.y;
  my_rover[i].theta=current_location.theta;
 
-for(int j=0;j<=2;j++)
+for(int j=0;j<=5;j++)
 {
  g_x+=cos(my_rover[j].theta);
  g_y+=sin(my_rover[j].theta);
 
  if(i!=j&&(hypot(my_rover[i].x, my_rover[i].y)<2)){
+    k++;
     l_x+=cos(my_rover[j].theta);
     l_y+=sin(my_rover[j].theta);
-    p_x+=(current_location.x-my_rover[j].x);
-    p_y+=(current_location.y-my_rover[j].y);
+    all_n_p_x+=(my_rover[j].x-current_location.x);
+    all_n_p_y+=(my_rover[j].y-current_location.y);
 }
 }
+    p_y = current_location.y+all_n_p_y/k;
+    p_x = current_location.x+all_n_p_x/k;	
+
     
 local_heading=atan2(l_y,l_x);
 global_heading=atan2(g_y,g_x);
@@ -365,3 +384,4 @@ my_angular=KP*(local_heading-current_location.theta);
    
 }
 
+// test
