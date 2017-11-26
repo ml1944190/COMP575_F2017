@@ -358,7 +358,7 @@ for(int j=0;j<=5;j++)
  g_x+=cos(my_rover[j].theta);
  g_y+=sin(my_rover[j].theta);
 
- if(i!=j&&(hypot(my_rover[i].x, my_rover[i].y)<2)){
+ if(i!=j&&(hypot(my_rover[i].x-my_rover[j].x, my_rover[i].y-my_rover[j].y)<2)){
     k++;
     l_x+=cos(my_rover[j].theta);
     l_y+=sin(my_rover[j].theta);
