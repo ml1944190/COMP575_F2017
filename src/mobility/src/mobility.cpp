@@ -367,8 +367,8 @@ for(int j=0;j<=5;j++)
 }
 }
 	if (k==0){
-	p_y = current.location.y;
-	p_x = current.location.x;	
+	p_y = current_location.y;
+	p_x = current_location.x;	
 	
 	}
 	else{
