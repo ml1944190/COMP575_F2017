@@ -311,7 +311,7 @@ void poseHandler(const std_msgs::String::ConstPtr& message)
     	
  float global_heading=0;
  float local_heading=0;
- float local_position=0;
+ float new_local_heading=0;
  float l_x=0;
  float l_y=0;
  float g_x=0;
@@ -372,16 +372,17 @@ for(int j=0;j<=5;j++)
     
 local_heading=atan2(l_y,l_x);
 global_heading=atan2(g_y,g_x);
-local_position=atan2(p_y,p_x);
+new_local_heading=atan2(p_y,p_x);
 
  lah_message.data=local_heading;
  gah_message.data=global_heading;
  localPublisher.publish(lah_message);
  globalPublisher.publish(gah_message);
 
-my_angular_new=KP*(current_location.theta-local_position);
+my_angular_new=KP*(new_local_heading-current_location.theta);
 my_angular=KP*(local_heading-current_location.theta);
    
 }
 
 // test //test
+
