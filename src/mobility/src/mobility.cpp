@@ -366,9 +366,15 @@ for(int j=0;j<=5;j++)
     all_n_p_y+=(my_rover[j].y-current_location.y);
 }
 }
-    p_y = current_location.y+all_n_p_y/k;
-    p_x = current_location.x+all_n_p_x/k;	
-
+	if (k==0){
+	p_y = current.location.y;
+	p_x = current.location.x;	
+	
+	}
+	else{
+    	p_y = current_location.y+all_n_p_y/k;
+    	p_x = current_location.x+all_n_p_x/k;	
+	}
     
 local_heading=atan2(l_y,l_x);
 global_heading=atan2(g_y,g_x);
