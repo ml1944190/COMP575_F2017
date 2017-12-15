@@ -1,4 +1,3 @@
-//Reynolds Flocking
 #include <ros/ros.h>
 #include <stdlib.h>
 #include <sstream>
@@ -52,7 +51,9 @@ float kill_switch_timeout = 10;
 float global_average_heading;
 float local_average_heading;
 float position_average_heading;
-
+float separation_heading;
+float general_heading;
+double PI = std::atan(1.0)*4;
 
 pose current_location;
 
@@ -114,6 +115,7 @@ float calculate_global_average_heading();
 float calculate_local_average_heading();
 void calculate_neighbors(string rover_name);
 void calculate_position_average_heading();
+void calculate_separation_heading();
 
 
 vector <pose> neighbors(6);
@@ -184,7 +186,7 @@ void mobilityStateMachine(const ros::TimerEvent &)
             case STATE_MACHINE_TRANSLATE:
             {
                 state_machine_msg.data = "TRANSLATING";//, " + converter.str();
-                float angular_velocity = position_average_heading-current_location.theta;
+                float angular_velocity = KP*(general_heading-current_location.theta);
                 float linear_velocity = 0.05;
                 setVelocity(linear_velocity, angular_velocity);
                 break;
@@ -449,7 +451,7 @@ void calculate_position_averaging_heading(){
 	average_position_y=current_location.y+sum_y/neighbors.size();
     
     }
-    position_average_heading=KP*atan2(average_position_y,average_position_x);
+    position_average_heading=atan2(average_position_y,average_position_x);
 }
 
    
@@ -467,6 +469,8 @@ void poseHandler(const std_msgs::String::ConstPtr& message)
     calculate_neighbors(rover_name);
     float lah = calculate_local_average_heading();
     calculate_position_averaging_heading();
+    calculate_separation_heading();
+    general_heading= 0.4*global_average_heading+0.4*position_average_heading+0.2*separation_heading;
 
     std::stringstream converter;
     converter << msg << ", " << rover_name << ", " << gah << ", " << lah << ", " << all_rovers[0].theta << ", " << all_rovers[1].theta << ", " << all_rovers[2].theta;
@@ -479,4 +483,24 @@ void poseHandler(const std_msgs::String::ConstPtr& message)
     lah_message.data = lah;
     globalAverageHeadingPublisher.publish(gah_message);
     localAverageHeadingPublisher.publish(lah_message);
+}
+
+void calculate_separation_heading(){
+    float sum_x=0;
+    float sum_y=0;
+    float average_position_x=0;
+    float average_position_y=0;
+    for (int i=0;i<neighbors.size();i++){
+        sum_x +=(neighbors[i].x-current_location.x);
+	sum_y +=(neighbors[i].y-current_location.y);
+    }
+    if (neighbors.size()==0){
+	average_position_x=current_location.x;
+	average_position_y=current_location.y;
+    }else{
+	average_position_x=current_location.x-sum_x/neighbors.size();
+	average_position_y=current_location.y-sum_y/neighbors.size();
+    
+    }
+    separation_heading=atan2(average_position_y,average_position_x);
 }
