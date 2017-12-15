@@ -433,7 +433,7 @@ void calculate_neighbors(string rover_name){
     neighbors.clear();
     for (int i = 0; i<6; i++){
         if(i != my_index){
-            if(hypot(my_pose.x-all_rovers[i].x, my_pose.y-all_rovers[i].y)<20){
+            if(hypot(my_pose.x-all_rovers[i].x, my_pose.y-all_rovers[i].y)<2){
                 neighbors.push_back(all_rovers[i]);
             }
         }
@@ -603,7 +603,7 @@ void publish_imcoming_processor(string rover_name)
     neighbor_max.clear();
     for (int i = 0; i<6; i++){
         if(i != my_index){
-            if(hypot(current_location.x-all_rovers[i].x, current_location.y-all_rovers[i].y)<20){
+            if(hypot(current_location.x-all_rovers[i].x, current_location.y-all_rovers[i].y)<2){
                 neighbor_max.push_back(w[i].max_id);
              }
           }
@@ -618,10 +618,10 @@ processor stf(processor w,int max2)
     if(w.count<diam){
         w.leader = -1;
     }
-    else if(w.count==diam&&w.max_id==w.my_id){
+    else if(w.count>=diam&&w.max_id==w.my_id){
         w.leader = 1;
     }
-    else if(w.count==diam&&w.max_id>w.my_id){
+    else if(w.count>=diam&&w.max_id>w.my_id){
         w.leader = 0;
     }
     w.count+=1;
