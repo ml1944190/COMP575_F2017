@@ -183,7 +183,7 @@ void mobilityStateMachine(const ros::TimerEvent &)
             case STATE_MACHINE_TRANSLATE:
             {
                 state_machine_msg.data = "TRANSLATING";//, " + converter.str();
-                float angular_velocity = position_average_heading-current_location.theta;
+                float angular_velocity = KP*position_average_heading-current_location.theta;
                 float linear_velocity = 0.05;
                 setVelocity(linear_velocity, angular_velocity);
                 break;
@@ -448,7 +448,7 @@ void calculate_position_averaging_heading(){
 	average_position_y=current_location.y+sum_y/neighbors.size();
     
     }
-    position_average_heading=KP*atan2(average_position_y,average_position_x);
+    position_average_heading=atan2(average_position_y,average_position_x);
 }
 
    
